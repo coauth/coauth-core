@@ -1,0 +1,52 @@
+#Profile configuration for dev environment
+spring:
+  config:
+    activate:
+      on-profile: dev
+  cloud:
+    gateway:
+      routes:
+        - id: register-generate-route
+          uri: ${REGISTER_GENERATE:http://localhost:8082}
+          predicates:
+           - Path=/api/coauth/core/generate
+          filters:
+           - StripPrefix=1
+           - APIKeyValidationFilterGateway
+server:
+  port: 8080
+coauth:
+  core:
+    auth-guard:
+      url: http://localhost:8081/core/auth-guard
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    web: TRACE
+---
+#Profile configuration for production environment
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    gateway:
+      routes:
+        - id: register-generate-route
+          uri: ${REGISTER_GENERATE:http://localhost:8080}
+          predicates:
+           - Path=/api/coauth/core/generate
+          filters:
+            - StripPrefix=1
+            - APIKeyValidationFilter
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+coauth:
+  core:
+    auth-guard:
+      url: http://core-auth-guard:8080/core/auth-guard
