@@ -1,0 +1,8 @@
+*
+!target/*-runner
+!target/*-runner.jar
+!target/lib/*
+!target/quarkus-app/*
+core-auth-guard.iml
+postman-collection
+README.md
