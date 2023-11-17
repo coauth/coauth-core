@@ -4,7 +4,7 @@ import dev.coauth.core.dto.CoreAppDetails;
 import lombok.Data;
 
 @Data
-public class GenerateRequestDto {
+public class VerifyGenerateRequestDto {
     private String userId;
     private CoreAppDetails appDetails;
     private String modules;

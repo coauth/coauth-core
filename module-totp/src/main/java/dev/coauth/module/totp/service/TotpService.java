@@ -156,7 +156,7 @@ public class TotpService {
                     if (entity == null) {
                         return Uni.createFrom().failure(new NonFatalException(1000, "Record does not exists"));
                     } else {
-                        return Uni.createFrom().item(java.util.UUID.randomUUID().toString())
+                        return Uni.createFrom().item(verificationGenerateRequestDto.code)
                                 .onItem()
                                 .invoke(uuid -> {
                                     TotpVerificationCacheDto totpVerificationCacheDto = new TotpVerificationCacheDto(uuid, verificationGenerateRequestDto.getAppId(), verificationGenerateRequestDto.getUserId(), 0, DateTimeUtils.addMinutes(DateTimeUtils.getCurrentDate(), attemptExpiryTimeMinutes), ApplicationConstants.STATUS_PENDING, verificationGenerateRequestDto.getCodeChallenge());
@@ -198,7 +198,10 @@ public class TotpService {
                                                 totpVerificationCacheDto.setNoOfAttempts(0);
                                                 totpVerificationCacheDto.setStatus(ApplicationConstants.STATUS_SUCCESS);
                                                 totpVerifyCache.putAsync(totpVerificationCacheDto.getCode(), totpVerificationCacheDto);
-                                                return Uni.createFrom().item(totpVerificationCacheDto.getCode());
+                                                return Uni.createFrom().item(totpVerificationCacheDto.getCode()).onItem()
+                                                .invoke(unUsed ->
+                                                        totpVerifyCache.remove(totpVerificationCacheDto.getCode())
+                                                );
                                             } else {
                                                 totpVerificationCacheDto.setNoOfAttempts(totpVerificationCacheDto.getNoOfAttempts() + 1);
                                                 totpVerifyCache.replace(totpVerificationCacheDto.getCode(), totpVerificationCacheDto);

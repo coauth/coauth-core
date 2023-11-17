@@ -20,7 +20,7 @@ public class TotpVerificationEndpoint {
     @Inject
     TotpService totpService;
 
-    @POST
+   /* @POST
     @Path("/generate-request")
     public Uni<Response> generate(@Valid VerificationGenerateRequestDto verificationGenerateRequestDto) {
         return totpService.generateAuthVerification(verificationGenerateRequestDto)
@@ -30,7 +30,7 @@ public class TotpVerificationEndpoint {
                             .build();
                 })
                 .onFailure().recoverWithItem(ResponseFormatter::formatFailureResponse);
-    }
+    }*/
 
     @POST
     @Path("/view")
@@ -57,7 +57,7 @@ public class TotpVerificationEndpoint {
     }
 
 
-    @POST
+/*    @POST
     @Path("/validate")
     public Uni<Response> validateVerification(@Valid VerificationValidateRequestDto verificationValidateRequestDto) {
         return totpService.validateVerification(verificationValidateRequestDto)
@@ -67,6 +67,6 @@ public class TotpVerificationEndpoint {
                             .build();
                 })
                 .onFailure().recoverWithItem(ResponseFormatter::formatFailureResponse);
-    }
+    }*/
 
 }

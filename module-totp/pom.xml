@@ -51,6 +51,10 @@
       <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+    </dependency>
+    <dependency>
       <groupId>dev.samstevens.totp</groupId>
       <artifactId>totp</artifactId>
       <version>1.7.1</version>

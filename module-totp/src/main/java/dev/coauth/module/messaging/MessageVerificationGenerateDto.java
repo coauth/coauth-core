@@ -1,14 +1,12 @@
-package dev.coauth.core.module.totp.cache;
+package dev.coauth.module.messaging;
 
 import lombok.Builder;
 import org.infinispan.protostream.annotations.ProtoFactory;
 import org.infinispan.protostream.annotations.ProtoField;
 
-import java.util.Date;
-
 
 @Builder
-public class ReconfirmVerificationCacheDto {
+public class MessageVerificationGenerateDto {
     private String code;
     private Integer appId;
 
@@ -87,7 +85,7 @@ public class ReconfirmVerificationCacheDto {
     }
 
     @ProtoFactory
-    public ReconfirmVerificationCacheDto(String code, Integer appId, String userId, String reconfirmText, Integer noOfAttempts,  String status, String codeChallenge) {
+    public MessageVerificationGenerateDto(String code, Integer appId, String userId, String reconfirmText, Integer noOfAttempts, String status, String codeChallenge) {
         this.code = code;
         this.appId = appId;
         this.userId = userId;
