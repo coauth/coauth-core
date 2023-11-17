@@ -3,7 +3,8 @@ package dev.coauth.core.module.registry.endpoint;
 
 import dev.coauth.core.dto.GenericResponseDto;
 import dev.coauth.core.exception.NonFatalException;
-import dev.coauth.core.module.registry.dto.GenerateRequestDto;
+import dev.coauth.core.module.registry.dto.VerifyGenerateRequestDto;
+import dev.coauth.core.module.registry.dto.VerifyStatusRequestDto;
 import dev.coauth.core.module.registry.service.CoreModuleRegistryService;
 import io.quarkus.security.UnauthorizedException;
 import io.smallrye.mutiny.Uni;
@@ -23,8 +24,7 @@ public class CoreModuleRegistryEndpoint {
 
     @POST
     @Path("/generate")
-    public Uni<Response> authenticate(@Valid GenerateRequestDto generateRequestDto)   {
-
+    public Uni<Response> authenticate(@Valid VerifyGenerateRequestDto generateRequestDto)   {
         if(generateRequestDto.getAppDetails().getAppId() == 0 || generateRequestDto.getUserId() == null || generateRequestDto.getUserId().trim().isEmpty()){
             return Uni.createFrom().item(formatFailureResponse(new UnauthorizedException("Invalid Request")));
         }else{
@@ -38,6 +38,19 @@ public class CoreModuleRegistryEndpoint {
         }
     }
 
+
+    @POST
+    @Path("/status")
+    public Uni<Response> verify(@Valid VerifyStatusRequestDto verifyStatusRequestDto)   {
+
+        return coreModuleRegistryService.validateVerification(verifyStatusRequestDto)
+                .onItem().transform(entity -> {
+                    return Response.ok()
+                            .entity(GenericResponseDto.builder().data(entity).build())
+                            .build();
+                })
+                .onFailure().recoverWithItem(this::formatFailureResponse);
+    }
 
     private  Response formatFailureResponse(Throwable failure) {
         if (failure instanceof NonFatalException) {

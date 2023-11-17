@@ -1,12 +1,15 @@
 package dev.coauth.core.module.registry.service;
 
 import dev.coauth.core.exception.NonFatalException;
-import dev.coauth.core.module.registry.dto.GenerateRequestDto;
+import dev.coauth.core.module.registry.dto.VerifyGenerateRequestDto;
+import dev.coauth.core.module.registry.dto.VerifyStatusRequestDto;
 import dev.coauth.core.module.registry.entity.CoreModuleRegistryMstrEntity;
 import dev.coauth.core.module.registry.repository.CoreModuleRegistryMstrRepository;
+import dev.coauth.core.module.registry.producer.MessageBrokerService;
 import dev.coauth.core.module.totp.cache.AvailableVerificationCacheDto;
-import dev.coauth.core.module.totp.cache.ReconfirmVerificationCacheDto;
+import dev.coauth.core.module.messaging.MessageVerificationGenerateDto;
 import dev.coauth.core.utils.ApplicationConstants;
+import dev.coauth.core.utils.CryptoAlgoUtil;
 import io.quarkus.infinispan.client.Remote;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -14,6 +17,7 @@ import jakarta.inject.Inject;
 import org.infinispan.client.hotrod.RemoteCache;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class CoreModuleRegistryService {
@@ -27,9 +31,13 @@ public class CoreModuleRegistryService {
     @Inject
     MessageBrokerService messageBrokerService;
 
-    public Uni<String> validateModuleRequest(GenerateRequestDto generateRequestDto) {
+    public Uni<String> validateModuleRequest(VerifyGenerateRequestDto generateRequestDto) {
 
-        Set<String> requestedModules = new LinkedHashSet<>(Arrays.asList(generateRequestDto.getModules().split(",")));
+        Set<String> requestedModules = Arrays.stream(generateRequestDto.getModules().split(","))
+                .map(String::trim)
+                .filter(ApplicationConstants.AVAILABLE_MODULES::contains)
+                .collect(Collectors.toSet());
+
 
         CoreModuleRegistryMstrEntity inputBean = CoreModuleRegistryMstrEntity.builder()
                 .status(ApplicationConstants.STATUS_ACTIVE)
@@ -42,7 +50,9 @@ public class CoreModuleRegistryService {
                         if (requestedModules.contains(ApplicationConstants.MODULE_RECONFIRM)) {
                             return Uni.createFrom().item(java.util.UUID.randomUUID().toString())
                                     .onItem()
-                                    .transformToUni(uuid -> sendMessage(uuid, generateRequestDto.getAppDetails().getAppId(), generateRequestDto.getUserId(), ApplicationConstants.MODULE_RECONFIRM)
+                                    .transformToUni(uuid -> sendMessage(uuid, generateRequestDto.getAppDetails().getAppId(),
+                                            generateRequestDto.getUserId(),
+                                            ApplicationConstants.MODULE_RECONFIRM)
                                             .onItem()
                                             .transformToUni(
                                                     voidUni -> putAvailableVerificationInCache(uuid, generateRequestDto.getAppDetails().getAppId(),
@@ -69,11 +79,11 @@ public class CoreModuleRegistryService {
                                     .transformToUni(uuid -> {
                                         List<String> availableModules = new ArrayList<>(requestedModules);
                                         String currentModule = availableModules.get(0);
-                                        return sendMessage(uuid, generateRequestDto.getAppDetails().getAppId(), generateRequestDto.getUserId(), ApplicationConstants.MODULE_RECONFIRM)
+                                        return sendMessage(uuid, generateRequestDto.getAppDetails().getAppId(), generateRequestDto.getUserId(), currentModule)
                                                 .onItem()
                                                 .transformToUni(
                                                         voidUni -> putAvailableVerificationInCache(uuid, generateRequestDto.getAppDetails().getAppId(),
-                                                                generateRequestDto.getUserId(), ApplicationConstants.MODULE_RECONFIRM,
+                                                                generateRequestDto.getUserId(), String.join(",", requestedModules),
                                                                 currentModule,
                                                                 generateRequestDto.getCodeChallenge()).onItem().transformToUni(voidItem -> Uni.createFrom().item(uuid)));
 
@@ -90,23 +100,59 @@ public class CoreModuleRegistryService {
                 .availableModules(availableModules)
                 .currentModule(currentModule)
                 .codeChallenge(codeChallenge)
+                .status(ApplicationConstants.STATUS_PENDING)
                 .build();
         return Uni.createFrom().voidItem().invoke(voidItem -> availableVerificationCacheDtoRemoteCache.putAsync(uuid, availableVerificationCacheDto));
     }
 
     public Uni<Void> sendMessage(String uuid, int appId, String userId, String serviceName) {
         return Uni.createFrom().voidItem().onItem().transformToUni(voidItem -> {
-            ReconfirmVerificationCacheDto reconfirmVerificationCacheDto = ReconfirmVerificationCacheDto.builder()
+            MessageVerificationGenerateDto messageVerificationGenerateDto = MessageVerificationGenerateDto.builder()
                     .code(uuid).userId(userId)
                     .appId(appId).build();
             if (serviceName.equals(ApplicationConstants.MODULE_RECONFIRM))
-                return messageBrokerService.emitReconfirmVerifyGenerate(reconfirmVerificationCacheDto);
+                return messageBrokerService.emitReconfirmVerifyGenerate(messageVerificationGenerateDto);
             else if (serviceName.equals(ApplicationConstants.MODULE_TOTP)) {
-                return messageBrokerService.emitTotpVerifyGenerate(reconfirmVerificationCacheDto);
+                return messageBrokerService.emitTotpVerifyGenerate(messageVerificationGenerateDto);
             }
             return Uni.createFrom().nullItem();
         });
     }
 
+
+    public Uni<Void> updateCache(String code, int appId,String userId, String status){
+        return Uni.createFrom().voidItem().invoke(voidItem -> {
+            AvailableVerificationCacheDto availableVerificationCacheDto = availableVerificationCacheDtoRemoteCache.get(code);
+            if(availableVerificationCacheDto.getAppId()==appId && availableVerificationCacheDto.getUserId().equals(userId)) {
+                availableVerificationCacheDto.setStatus(status);
+                availableVerificationCacheDtoRemoteCache.putAsync(code, availableVerificationCacheDto);
+            }
+        });
+    }
+
+    public Uni<String> validateVerification(VerifyStatusRequestDto verifyStatusRequestDto) {
+        return Uni.createFrom().item(availableVerificationCacheDtoRemoteCache.get(verifyStatusRequestDto.getCode()))
+                .onItem().transformToUni(availableVerificationCacheDto -> {
+                    if (availableVerificationCacheDto == null) {
+                        return Uni.createFrom().failure(new NonFatalException(1000, "Record not found in cache"));
+                    } else {
+                        return CryptoAlgoUtil.calculateSHA256(verifyStatusRequestDto.getCodeVerifier())
+                                .onItem().transformToUni(sha256 -> {
+                                    if (sha256.equals(availableVerificationCacheDto.getCodeChallenge())) {
+                                        if (!availableVerificationCacheDto.getStatus().equals(ApplicationConstants.STATUS_SUCCESS)) {
+                                            return Uni.createFrom().failure(new NonFatalException(1002, "Verification not completed"));
+                                        } else {
+                                            return Uni.createFrom().item(availableVerificationCacheDto.getCode()).onItem()
+                                                    .invoke(entity ->
+                                                            availableVerificationCacheDtoRemoteCache.remove(availableVerificationCacheDto.getCode())
+                                                    );
+                                        }
+                                    } else {
+                                        return Uni.createFrom().failure(new NonFatalException(1002, "Invalid code verifier"));
+                                    }
+                                });
+                    }
+                });
+    }
 
 }
