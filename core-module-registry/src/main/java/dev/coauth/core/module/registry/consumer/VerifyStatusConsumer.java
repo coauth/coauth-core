@@ -1,7 +1,10 @@
 package dev.coauth.core.module.registry.consumer;
 
+import dev.coauth.core.module.messaging.MessageRegisterGenerateDto;
+import dev.coauth.core.module.messaging.MessageRegisterStatusDto;
 import dev.coauth.core.module.messaging.MessageVerificationStatusDto;
-import dev.coauth.core.module.registry.service.CoreModuleRegistryService;
+import dev.coauth.core.module.registry.service.CoreModuleRegistryRegisterService;
+import dev.coauth.core.module.registry.service.CoreModuleRegistryVerifyService;
 import io.smallrye.common.annotation.NonBlocking;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -12,19 +15,25 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 public class VerifyStatusConsumer {
 
     @Inject
-    CoreModuleRegistryService coreModuleRegistryService;
+    CoreModuleRegistryVerifyService coreModuleRegistryVerifyService;
+
+    @Inject
+    CoreModuleRegistryRegisterService coreModuleRegistryRegisterService;
 
     @Incoming("totp-verify-status")
     @NonBlocking
     public Uni<Void> consumeTotpVerifyStatus(MessageVerificationStatusDto messageVerificationStatusDto) {
-            return coreModuleRegistryService.updateCache(messageVerificationStatusDto.getCode(), messageVerificationStatusDto.getAppId(),
+            return coreModuleRegistryVerifyService.updateCache(messageVerificationStatusDto.getCode(), messageVerificationStatusDto.getAppId(),
                     messageVerificationStatusDto.getUserId(), messageVerificationStatusDto.getStatus());
     }
 
-    @Incoming("reconfirm-verify-status")
+    @Incoming("totp-register-status")
     @NonBlocking
-    public Uni<Void> consumeReconfirmVerifyStatus(MessageVerificationStatusDto messageVerificationStatusDto) {
-        return coreModuleRegistryService.updateCache(messageVerificationStatusDto.getCode(), messageVerificationStatusDto.getAppId(),
-                messageVerificationStatusDto.getUserId(), messageVerificationStatusDto.getStatus());
+    public Uni<Void> consumeTotpRegisterStatus(MessageRegisterStatusDto messageRegisterStatusDto) {
+        return coreModuleRegistryRegisterService.updateCache(messageRegisterStatusDto.getCode(), messageRegisterStatusDto.getAppId(),
+                messageRegisterStatusDto.getUserId(), messageRegisterStatusDto.getStatus());
     }
+
+
+
 }

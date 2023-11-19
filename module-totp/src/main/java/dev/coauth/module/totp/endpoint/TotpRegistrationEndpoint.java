@@ -14,7 +14,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Path("/module/totp/register")
+@Path("/coauth/module/totp/register")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class TotpRegistrationEndpoint {
@@ -22,7 +22,7 @@ public class TotpRegistrationEndpoint {
     @Inject
     TotpService totpService;
 
-    @POST
+   /* @POST
     @Path("/generate-request")
     public Uni<Response> generate(@Valid RegisterGenerateRequestDto registerGenerateRequestDto) {
         System.out.println(registerGenerateRequestDto.getAppId());
@@ -33,7 +33,7 @@ public class TotpRegistrationEndpoint {
                             .build();
                 })
                 .onFailure().recoverWithItem(ResponseFormatter::formatFailureResponse);
-    }
+    }*/
 
     @POST
     @Path("/view")
@@ -59,7 +59,7 @@ public class TotpRegistrationEndpoint {
                 .onFailure().recoverWithItem(ResponseFormatter::formatFailureResponse);
     }
 
-    @POST
+   /* @POST
     @Path("/validate")
     public Uni<Response> verify(@Valid RegisterVerifyRequestDto registerVerifyRequestDto) {
         return totpService.verify(registerVerifyRequestDto)
@@ -69,5 +69,5 @@ public class TotpRegistrationEndpoint {
                             .build();
                 })
                 .onFailure().recoverWithItem(ResponseFormatter::formatFailureResponse);
-    }
+    }*/
 }

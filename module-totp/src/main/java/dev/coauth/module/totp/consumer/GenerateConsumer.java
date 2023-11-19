@@ -1,6 +1,8 @@
 package dev.coauth.module.totp.consumer;
 
+import dev.coauth.module.messaging.MessageRegisterGenerateDto;
 import dev.coauth.module.messaging.MessageVerificationGenerateDto;
+import dev.coauth.module.totp.dto.RegisterGenerateRequestDto;
 import dev.coauth.module.totp.dto.VerificationGenerateRequestDto;
 import dev.coauth.module.totp.service.TotpService;
 import io.smallrye.common.annotation.NonBlocking;
@@ -24,6 +26,29 @@ public class GenerateConsumer {
         verificationGenerateRequestDto.setCodeChallenge(messageVerificationGenerateDto.getCodeChallenge());
         verificationGenerateRequestDto.setCode(messageVerificationGenerateDto.getCode());
         return totpService.generateAuthVerification(verificationGenerateRequestDto)
+                .onItem().transformToUni(entity -> {
+                    return Uni.createFrom().voidItem();
+                })
+                //return void on failure
+                .onFailure().recoverWithItem(entity -> {
+                    return null;
+                });
+    }
+
+    @Incoming("totp-register-generate")
+    @NonBlocking
+    public Uni<Void> consume(MessageRegisterGenerateDto messageRegisterGenerateDto) {
+        System.out.println("received message");
+        RegisterGenerateRequestDto registerGenerateRequestDto = new RegisterGenerateRequestDto();
+        registerGenerateRequestDto.setAppId(messageRegisterGenerateDto.getAppId());
+        registerGenerateRequestDto.setUserId(messageRegisterGenerateDto.getUserId());
+        registerGenerateRequestDto.setCodeChallenge(messageRegisterGenerateDto.getCodeChallenge());
+        registerGenerateRequestDto.setCode(messageRegisterGenerateDto.getCode());
+
+
+
+
+        return totpService.generateSecret(registerGenerateRequestDto)
                 .onItem().transformToUni(entity -> {
                     return Uni.createFrom().voidItem();
                 })

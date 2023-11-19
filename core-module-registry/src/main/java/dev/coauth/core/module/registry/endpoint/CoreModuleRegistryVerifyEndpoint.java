@@ -5,7 +5,8 @@ import dev.coauth.core.dto.GenericResponseDto;
 import dev.coauth.core.exception.NonFatalException;
 import dev.coauth.core.module.registry.dto.VerifyGenerateRequestDto;
 import dev.coauth.core.module.registry.dto.VerifyStatusRequestDto;
-import dev.coauth.core.module.registry.service.CoreModuleRegistryService;
+import dev.coauth.core.module.registry.dto.VerifyViewRequestDto;
+import dev.coauth.core.module.registry.service.CoreModuleRegistryVerifyService;
 import io.quarkus.security.UnauthorizedException;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
@@ -14,13 +15,13 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Path("/core/module-registry")
+@Path("/coauth/core/module-registry/verify")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class CoreModuleRegistryEndpoint {
+public class CoreModuleRegistryVerifyEndpoint {
 
     @Inject
-    CoreModuleRegistryService coreModuleRegistryService;
+    CoreModuleRegistryVerifyService coreModuleRegistryService;
 
     @POST
     @Path("/generate")
@@ -44,6 +45,19 @@ public class CoreModuleRegistryEndpoint {
     public Uni<Response> verify(@Valid VerifyStatusRequestDto verifyStatusRequestDto)   {
 
         return coreModuleRegistryService.validateVerification(verifyStatusRequestDto)
+                .onItem().transform(entity -> {
+                    return Response.ok()
+                            .entity(GenericResponseDto.builder().data(entity).build())
+                            .build();
+                })
+                .onFailure().recoverWithItem(this::formatFailureResponse);
+    }
+
+    @POST
+    @Path("/load")
+    public Uni<Response> load(@Valid VerifyViewRequestDto verifyViewRequestDto)   {
+        System.out.println("LOADING");
+        return coreModuleRegistryService.getViewDetails(verifyViewRequestDto.getCode())
                 .onItem().transform(entity -> {
                     return Response.ok()
                             .entity(GenericResponseDto.builder().data(entity).build())

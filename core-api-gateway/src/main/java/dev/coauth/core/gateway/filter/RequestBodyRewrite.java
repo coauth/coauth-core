@@ -32,7 +32,7 @@ public class RequestBodyRewrite implements RewriteFunction<String, String> {
 
             // Example: Convert the JSON body to a Map and modify it
             Map<String, Object> map = convertJsonToMap(body);
-            map.put("app", coreAppAuthMstrProperties);
+            map.put("appDetails", coreAppAuthMstrProperties);
 
             String modifiedBody = convertMapToJson(map);
             System.out.println("Modified Body: " + modifiedBody);

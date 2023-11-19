@@ -4,6 +4,7 @@ import dev.coauth.core.module.registry.entity.CoreModuleRegistryMstrEntity;
 import dev.coauth.core.utils.ApplicationConstants;
 import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.quarkus.hibernate.reactive.panache.common.WithSession;
+import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -15,5 +16,16 @@ public class CoreModuleRegistryMstrRepository implements PanacheRepositoryBase<C
     @WithSession
     public Uni<List<CoreModuleRegistryMstrEntity>> getAvailableModules(CoreModuleRegistryMstrEntity coreModuleRegistryMstrEntity){
         return find("appId = ?1 and userId = ?2 and status in (?3, ?4)", coreModuleRegistryMstrEntity.getAppId(), coreModuleRegistryMstrEntity.getUserId(),coreModuleRegistryMstrEntity.getStatus(), ApplicationConstants.STATUS_DISABLED).list();
+    }
+
+    @WithSession
+    public Uni<List<CoreModuleRegistryMstrEntity>> getRegisteredModule(CoreModuleRegistryMstrEntity coreModuleRegistryMstrEntity){
+        return find("appId = ?1 and userId = ?2 and status in (?3, ?4)", coreModuleRegistryMstrEntity.getAppId(), coreModuleRegistryMstrEntity.getUserId(),ApplicationConstants.STATUS_ACTIVE, ApplicationConstants.STATUS_DISABLED).list();
+    }
+
+    @WithSession
+    @WithTransaction
+    public Uni<CoreModuleRegistryMstrEntity> save(CoreModuleRegistryMstrEntity coreModuleRegistryMstrEntity){
+        return persist(coreModuleRegistryMstrEntity);
     }
 }

@@ -3,6 +3,7 @@ package dev.coauth.core.module.registry.service;
 import dev.coauth.core.exception.NonFatalException;
 import dev.coauth.core.module.registry.dto.VerifyGenerateRequestDto;
 import dev.coauth.core.module.registry.dto.VerifyStatusRequestDto;
+import dev.coauth.core.module.registry.dto.VerifyViewResponseDto;
 import dev.coauth.core.module.registry.entity.CoreModuleRegistryMstrEntity;
 import dev.coauth.core.module.registry.repository.CoreModuleRegistryMstrRepository;
 import dev.coauth.core.module.registry.producer.MessageBrokerService;
@@ -20,9 +21,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class CoreModuleRegistryService {
+public class CoreModuleRegistryVerifyService {
 
-    @Remote("available_modules")
+    @Remote("available_modules_verify")
     RemoteCache<String, AvailableVerificationCacheDto> availableVerificationCacheDtoRemoteCache;
 
     @Inject
@@ -139,11 +140,13 @@ public class CoreModuleRegistryService {
                         return CryptoAlgoUtil.calculateSHA256(verifyStatusRequestDto.getCodeVerifier())
                                 .onItem().transformToUni(sha256 -> {
                                     if (sha256.equals(availableVerificationCacheDto.getCodeChallenge())) {
+                                        System.out.println("Status verify"+availableVerificationCacheDto.getStatus());
                                         if (!availableVerificationCacheDto.getStatus().equals(ApplicationConstants.STATUS_SUCCESS)) {
                                             return Uni.createFrom().failure(new NonFatalException(1002, "Verification not completed"));
                                         } else {
                                             return Uni.createFrom().item(availableVerificationCacheDto.getCode()).onItem()
-                                                    .invoke(entity ->
+                                                    .transformToUni(uuid -> Uni.createFrom().item(availableVerificationCacheDto.getStatus())
+                                                    ).invoke(entity ->
                                                             availableVerificationCacheDtoRemoteCache.remove(availableVerificationCacheDto.getCode())
                                                     );
                                         }
@@ -154,5 +157,22 @@ public class CoreModuleRegistryService {
                     }
                 });
     }
+
+    public Uni<VerifyViewResponseDto> getViewDetails(String code) {
+        System.out.println("Loading"+code);
+        return Uni.createFrom().item(availableVerificationCacheDtoRemoteCache.get(code))
+                .onItem().transformToUni(availableVerificationCacheDto -> {
+                    if (availableVerificationCacheDto == null) {
+                        return Uni.createFrom().failure(new NonFatalException(1000, "Invalid request"));
+                    } else {
+                        return Uni.createFrom().item(VerifyViewResponseDto.builder()
+                                .code(availableVerificationCacheDto.getCode())
+                                .availableModules(availableVerificationCacheDto.getAvailableModules())
+                                .currentModule(availableVerificationCacheDto.getCurrentModule())
+                                .build());
+                    }
+                });
+    }
+
 
 }

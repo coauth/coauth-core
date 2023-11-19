@@ -1,10 +1,13 @@
 package dev.coauth.module.totp.service;
 
+import dev.coauth.module.messaging.MessageRegisterStatusDto;
+import dev.coauth.module.messaging.MessageVerificationStatusDto;
 import dev.coauth.module.totp.cache.TotpRegisterCacheDto;
 import dev.coauth.module.totp.cache.TotpVerificationCacheDto;
 import dev.coauth.module.totp.dto.*;
 import dev.coauth.module.totp.entity.TotpMstrEntity;
 import dev.coauth.module.totp.exception.NonFatalException;
+import dev.coauth.module.totp.producer.MessageBrokerService;
 import dev.coauth.module.totp.repository.TotpRepository;
 import dev.coauth.module.totp.utils.ApplicationConstants;
 import dev.coauth.module.totp.utils.CryptoAlgoUtil;
@@ -36,12 +39,15 @@ public class TotpService {
     @ConfigProperty(name = "totp.attempt-expiry-time-minutes")
     int attemptExpiryTimeMinutes;
 
+    @Inject
+    MessageBrokerService brokerService;
+
     public Uni<String> generateSecret(RegisterGenerateRequestDto registerGenerateRequestDto) {
         return getDetails(registerGenerateRequestDto.appId, registerGenerateRequestDto.userId)
                 .onItem().transformToUni(entity -> {
                     if (entity == null) {
                         // Generate UUID asynchronously
-                        return Uni.createFrom().item(java.util.UUID.randomUUID().toString())
+                        return Uni.createFrom().item(registerGenerateRequestDto.getCode())
                                 .onItem().transformToUni(uuid -> {
                                     // Generate secret asynchronously
                                     return totpUtilService.generateSecretKey()
@@ -70,6 +76,7 @@ public class TotpService {
 
 
     public Uni<String> generateQR(RegisterViewRequestDto registerViewRequestDto) {
+        System.out.println("QR CODE"+registerViewRequestDto.getAppCode());
         return Uni.createFrom().item(totpRegisterCache.get(registerViewRequestDto.getAppCode()))
                 .onItem().transformToUni(totpRegisterCacheDto -> {
                     if (totpRegisterCacheDto == null) {
@@ -77,33 +84,48 @@ public class TotpService {
                     } else {
                         return totpUtilService.generateQRCode(
                                 totpRegisterCacheDto.getSecret(),
-                                "hellO@coauth.dev",
+                                totpRegisterCacheDto.getUserId(),
                                 "Co-Auth");
                     }
                 });
     }
 
     public Uni<String> save(RegisterSaveRequestDto registerSaveRequestDto) {
-        return Uni.createFrom().item(totpRegisterCache.get(registerSaveRequestDto.getAppCode()))
+        return Uni.createFrom().item(() -> totpRegisterCache.get(registerSaveRequestDto.getAppCode()))
                 .onItem().transformToUni(totpRegisterCacheDto -> {
                     if (totpRegisterCacheDto == null) {
                         return Uni.createFrom().failure(new NonFatalException(1000, "Record not found"));
                     } else {
-                        return totpUtilService.verify(
-                                        registerSaveRequestDto.getTotpCode(),
-                                        totpRegisterCacheDto.getSecret())
+                        return totpUtilService.verify(registerSaveRequestDto.getTotpCode(), totpRegisterCacheDto.getSecret())
                                 .onItem().transformToUni(isValid -> {
                                     if (isValid) {
                                         TotpMstrEntity totpMstrEntity = createRegisterCacheObject(totpRegisterCacheDto);
                                         return totpRepository.save(totpMstrEntity)
-                                                .onItem().transform(entity -> registerSaveRequestDto.getAppCode()); // Return the string directly
+                                                .onItem().transformToUni(entity -> {
+                                                    MessageRegisterStatusDto messageRegisterStatusDto = new MessageRegisterStatusDto();
+                                                    messageRegisterStatusDto.setAppId(totpRegisterCacheDto.getAppId());
+                                                    messageRegisterStatusDto.setCode(totpRegisterCacheDto.getCode());
+                                                    messageRegisterStatusDto.setUserId(totpRegisterCacheDto.getUserId());
+                                                    messageRegisterStatusDto.setStatus(ApplicationConstants.STATUS_SUCCESS);
+
+                                                    return brokerService.emitTotpRegisterStatus(messageRegisterStatusDto)
+                                                            .onItem()
+
+                                                            .transformToUni(entity2 -> {
+                                                                // Use removeAsync and map to the original code
+                                                                return Uni.createFrom().item(totpRegisterCacheDto.getCode());
+                                                            }).invoke(entity1 -> {
+                                                                totpRegisterCache.removeAsync(totpRegisterCacheDto.getCode());
+                                                            });
+                                                });
                                     } else {
-                                        return Uni.createFrom().failure(new NonFatalException(1003, "Record not found / Invalid TOTP"));
+                                        return Uni.createFrom().failure(new NonFatalException(1003, "Invalid TOTP"));
                                     }
                                 });
                     }
                 });
     }
+
 
     private static TotpMstrEntity createRegisterCacheObject(TotpRegisterCacheDto totpRegisterCacheDto) {
         TotpMstrEntity totpMstrEntity = new TotpMstrEntity();
@@ -171,8 +193,8 @@ public class TotpService {
 
     public Uni<String> viewAuthVerification(VerificationViewRequestDto verificationViewRequestDto) {
         return Uni.createFrom().item(totpVerifyCache.get(verificationViewRequestDto.getAppCode()))
-                .onItem().transformToUni(totpRegisterCacheDto -> {
-                    if (totpRegisterCacheDto == null) {
+                .onItem().transformToUni(totpVerificationCacheDto -> {
+                    if (totpVerificationCacheDto == null) {
                         return Uni.createFrom().failure(new NonFatalException(1000, "Record not found"));
                     } else {
                         return Uni.createFrom().item(verificationViewRequestDto.getAppCode());
@@ -199,9 +221,18 @@ public class TotpService {
                                                 totpVerificationCacheDto.setStatus(ApplicationConstants.STATUS_SUCCESS);
                                                 totpVerifyCache.putAsync(totpVerificationCacheDto.getCode(), totpVerificationCacheDto);
                                                 return Uni.createFrom().item(totpVerificationCacheDto.getCode()).onItem()
-                                                .invoke(unUsed ->
-                                                        totpVerifyCache.remove(totpVerificationCacheDto.getCode())
-                                                );
+                                                        .transformToUni(entity1 -> {
+                                                            MessageVerificationStatusDto messageVerificationStatusDto = new MessageVerificationStatusDto();
+                                                            messageVerificationStatusDto.setAppId(totpVerificationCacheDto.getAppId());
+                                                            messageVerificationStatusDto.setCode(totpVerificationCacheDto.getCode());
+                                                            messageVerificationStatusDto.setUserId(totpVerificationCacheDto.getUserId());
+                                                            messageVerificationStatusDto.setStatus(ApplicationConstants.STATUS_SUCCESS);
+                                                            return brokerService.emitTotpVerifyStatus(messageVerificationStatusDto).onItem()
+                                                                    .transform(entity2 -> totpVerificationCacheDto.getCode());
+                                                        })
+                                                        .invoke(unUsed ->
+                                                                totpVerifyCache.remove(totpVerificationCacheDto.getCode())
+                                                        );
                                             } else {
                                                 totpVerificationCacheDto.setNoOfAttempts(totpVerificationCacheDto.getNoOfAttempts() + 1);
                                                 totpVerifyCache.replace(totpVerificationCacheDto.getCode(), totpVerificationCacheDto);
@@ -217,7 +248,7 @@ public class TotpService {
 
     }
 
-
+/*
     public Uni<String> validateVerification(VerificationValidateRequestDto verificationValidateRequestDto) {
         return Uni.createFrom().item(totpVerifyCache.get(verificationValidateRequestDto.getAppCode()))
                 .onItem().transformToUni(totpVerificationCacheDto -> {
@@ -241,5 +272,5 @@ public class TotpService {
                                 });
                     }
                 });
-    }
+    }*/
 }
