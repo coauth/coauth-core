@@ -36,7 +36,7 @@ public class TotpService {
     @Remote("totp_verify")
     RemoteCache<String, TotpVerificationCacheDto> totpVerifyCache;
 
-    @ConfigProperty(name = "totp.attempt-expiry-time-minutes")
+    @ConfigProperty(name = "totp.attempt-expiry-time-minutes", defaultValue = "15")
     int attemptExpiryTimeMinutes;
 
     @Inject

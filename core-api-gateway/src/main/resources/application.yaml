@@ -1,3 +1,75 @@
+spring:
+  config:
+    activate:
+      on-profile: default
+  cloud:
+    gateway:
+      routes:
+        - id: coauth-core-register-load-routes
+          uri: ${MODULE_REGISTRY_SERVICE:http://localhost:8082}
+          predicates:
+            - Path=/api/coauth/register/load
+          filters:
+            - RewritePath=/api/coauth/register/load, /coauth/core/module-registry/register/load
+        - id: coauth-core-verify-load-routes
+          uri: ${MODULE_REGISTRY_SERVICE:http://localhost:8082}
+          predicates:
+            - Path=/api/coauth/verify/load
+          filters:
+            - RewritePath=/api/coauth/verify/load, /coauth/core/module-registry/verify/load
+        - id: coauth-core-register-routes
+          uri: ${MODULE_REGISTRY_SERVICE:http://localhost:8082}
+          predicates:
+            - Path=/api/coauth/register/**
+          filters:
+            - RewritePath=/api/coauth/register/(?<segment>.*), /coauth/core/module-registry/register/${segment}
+            - APIKeyValidationFilterGateway
+        - id: coauth-core-verify-routes
+          uri: ${MODULE_REGISTRY_SERVICE:http://localhost:8082}
+          predicates:
+            - Path=/api/coauth/verify/**
+          filters:
+            - RewritePath=/api/coauth/verify/(?<segment>.*), /coauth/core/module-registry/verify/${segment}
+            - APIKeyValidationFilterGateway
+        - id: module-totp-verification-routes
+          uri: ${MODULE_TOTP_SERVICE:http://localhost:8083}
+          predicates:
+            - Path=/api/coauth/module/totp/verification/**
+          filters:
+            - StripPrefix=1
+        - id: module-totp-register-routes
+          uri: ${MODULE_TOTP_SERVICE:http://localhost:8083}
+          predicates:
+            - Path=/api/coauth/module/totp/register/**
+          filters:
+            - StripPrefix=1
+        - id: ui-plugin
+          uri: ${UI_PLUGIN_SERVICE:http://localhost:3000}
+          predicates:
+            - Path=/ui/**
+          filters:
+            - StripPrefix=1
+        - id: example-application
+          uri: ${EXAMPLE_APP_SERVICE:http://localhost:8084}
+          predicates:
+            - Path=/example/**
+          filters:
+            - RewritePath=/example/(?<segment>.*), /${segment}
+server:
+  port: 8080
+
+coauth:
+  core:
+    auth-guard:
+      url: ${AUTH_GUARD_SERVICE:http://localhost:8081/core/auth-guard}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    web: INFO
+
+---
+
 #Profile configuration for dev environment
 spring:
   config:
@@ -70,31 +142,72 @@ logging:
     web: TRACE
 ---
 #Profile configuration for production environment
-#spring:
-#  config:
-#    activate:
-#      on-profile: prod
-#  cloud:
-#    gateway:
-#      routes:
-#        - id: register-generate-route
-#          uri: ${MODULE_REGISTRY_SERVICE:http://localhost:8082}
-#          predicates:
-#           - Path=/api/coauth/verify/**
-#           - Path=/api/coauth/generate/**
-#          filters:
-#           - RewritePath=/api/coauth/verify/(?<segment>.*), /coauth/core/module-registry/verify/${segment}
-#           - RewritePath=/api/coauth/generate/(?<segment>.*), /coauth/core/module-registry/generate/${segment}
-##          - StripPrefix=1
-#           - APIKeyValidationFilterGateway
-#server:
-#  port: 8080
-#
-#logging:
-#  level:
-#    org.springframework.cloud.gateway: INFO
-#
-#coauth:
-#  core:
-#    auth-guard:
-#      url: ${AUTH_GUARD_SERVICE:http://localhost:8081/core/auth-guard}
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    gateway:
+      routes:
+        - id: coauth-core-register-load-routes
+          uri: ${MODULE_REGISTRY_SERVICE:http://localhost:8082}
+          predicates:
+            - Path=/api/coauth/register/load
+          filters:
+            - RewritePath=/api/coauth/register/load, /coauth/core/module-registry/register/load
+        - id: coauth-core-verify-load-routes
+          uri: ${MODULE_REGISTRY_SERVICE:http://localhost:8082}
+          predicates:
+            - Path=/api/coauth/verify/load
+          filters:
+            - RewritePath=/api/coauth/verify/load, /coauth/core/module-registry/verify/load
+        - id: coauth-core-register-routes
+          uri: ${MODULE_REGISTRY_SERVICE:http://localhost:8082}
+          predicates:
+            - Path=/api/coauth/register/**
+          filters:
+            - RewritePath=/api/coauth/register/(?<segment>.*), /coauth/core/module-registry/register/${segment}
+            - APIKeyValidationFilterGateway
+        - id: coauth-core-verify-routes
+          uri: ${MODULE_REGISTRY_SERVICE:http://localhost:8082}
+          predicates:
+            - Path=/api/coauth/verify/**
+          filters:
+            - RewritePath=/api/coauth/verify/(?<segment>.*), /coauth/core/module-registry/verify/${segment}
+            - APIKeyValidationFilterGateway
+        - id: module-totp-verification-routes
+          uri: ${MODULE_TOTP_SERVICE:http://localhost:8083}
+          predicates:
+            - Path=/api/coauth/module/totp/verification/**
+          filters:
+            - StripPrefix=1
+        - id: module-totp-register-routes
+          uri: ${MODULE_TOTP_SERVICE:http://localhost:8083}
+          predicates:
+            - Path=/api/coauth/module/totp/register/**
+          filters:
+            - StripPrefix=1
+        - id: ui-plugin
+          uri: ${UI_PLUGIN_SERVICE:http://localhost:3000}
+          predicates:
+            - Path=/ui/**
+        #          filters:
+        #            - RewritePath=/ui/(?<segment>.*), /ui/${segment}
+        - id: example-application
+          uri: ${EXAMPLE_APP_SERVICE:http://localhost:8084}
+          predicates:
+            - Path=/example/**
+          filters:
+            - RewritePath=/example/(?<segment>.*), /${segment}
+server:
+  port: 8080
+
+coauth:
+  core:
+    auth-guard:
+      url: ${AUTH_GUARD_SERVICE:http://localhost:8081/core/auth-guard}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    web: INFO

@@ -21,12 +21,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class TotpUtilService {
-    @ConfigProperty(name="totp.time-period")
+    @ConfigProperty(name="totp.time-period",defaultValue = "30")
     int allowedTimePeriod;
 
-    @ConfigProperty(name="totp.allowed-discrepancy")
+    @ConfigProperty(name="totp.allowed-discrepancy",defaultValue = "2")
     int allowedDiscrepancy;
-    @ConfigProperty(name="totp.digit-length")
+    @ConfigProperty(name="totp.digit-length",defaultValue = "6")
     int digitLength;
 
     public Uni<String> generateSecretKey() {
