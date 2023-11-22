@@ -23,14 +23,10 @@ public class ApiKeyCacheBean {
     }
 
     public void addOrUpdate(String key, CoreApplicationMstrEntity coreApplicationMstrEntity) {
-        System.out.println("Updating start...");
         apiKeyMap.put(key, coreApplicationMstrEntity);
-        System.out.println("Updating end.");
     }
     public void delete(String key) {
-        System.out.println("Removing start");
         apiKeyMap.remove(key);
-        System.out.println("Removing end");
     }
 
 }

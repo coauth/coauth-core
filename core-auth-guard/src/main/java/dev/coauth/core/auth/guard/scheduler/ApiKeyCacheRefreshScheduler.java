@@ -49,8 +49,6 @@ public class ApiKeyCacheRefreshScheduler {
 
     @Scheduled(every = "{coauth.core.auth-guard.refresh-api-keys.interval}", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     Uni<Void> reFetchKeys() {
-        System.out.println("Refreshing API Keys...");
-
         return Uni.combine().all()
                 .unis(coreAppAuthMstrRepository.getActiveKeys(), coreApplicationMstrRepository.getActiveApps())
                 .asTuple()

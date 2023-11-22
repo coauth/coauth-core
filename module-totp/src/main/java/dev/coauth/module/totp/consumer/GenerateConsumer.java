@@ -38,16 +38,11 @@ public class GenerateConsumer {
     @Incoming("totp-register-generate")
     @NonBlocking
     public Uni<Void> consume(MessageRegisterGenerateDto messageRegisterGenerateDto) {
-        System.out.println("received message");
         RegisterGenerateRequestDto registerGenerateRequestDto = new RegisterGenerateRequestDto();
         registerGenerateRequestDto.setAppId(messageRegisterGenerateDto.getAppId());
         registerGenerateRequestDto.setUserId(messageRegisterGenerateDto.getUserId());
         registerGenerateRequestDto.setCodeChallenge(messageRegisterGenerateDto.getCodeChallenge());
         registerGenerateRequestDto.setCode(messageRegisterGenerateDto.getCode());
-
-
-
-
         return totpService.generateSecret(registerGenerateRequestDto)
                 .onItem().transformToUni(entity -> {
                     return Uni.createFrom().voidItem();

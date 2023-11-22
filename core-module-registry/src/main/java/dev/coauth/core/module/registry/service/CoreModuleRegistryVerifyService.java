@@ -1,6 +1,7 @@
 package dev.coauth.core.module.registry.service;
 
 import dev.coauth.core.exception.NonFatalException;
+import dev.coauth.core.module.messaging.ReconfirmMessageVerificationGenerateDto;
 import dev.coauth.core.module.registry.dto.VerifyGenerateRequestDto;
 import dev.coauth.core.module.registry.dto.VerifyStatusRequestDto;
 import dev.coauth.core.module.registry.dto.VerifyViewResponseDto;
@@ -38,7 +39,9 @@ public class CoreModuleRegistryVerifyService {
                 .map(String::trim)
                 .filter(ApplicationConstants.AVAILABLE_MODULES::contains)
                 .collect(Collectors.toSet());
-
+        if(requestedModules.isEmpty()){
+            return Uni.createFrom().failure(new NonFatalException(1100, "Invalid Modules specified in request"));
+        }
 
         CoreModuleRegistryMstrEntity inputBean = CoreModuleRegistryMstrEntity.builder()
                 .status(ApplicationConstants.STATUS_ACTIVE)
@@ -53,7 +56,7 @@ public class CoreModuleRegistryVerifyService {
                                     .onItem()
                                     .transformToUni(uuid -> sendMessage(uuid, generateRequestDto.getAppDetails().getAppId(),
                                             generateRequestDto.getUserId(),
-                                            ApplicationConstants.MODULE_RECONFIRM)
+                                            ApplicationConstants.MODULE_RECONFIRM,generateRequestDto.getReConfirmText())
                                             .onItem()
                                             .transformToUni(
                                                     voidUni -> putAvailableVerificationInCache(uuid, generateRequestDto.getAppDetails().getAppId(),
@@ -80,7 +83,7 @@ public class CoreModuleRegistryVerifyService {
                                     .transformToUni(uuid -> {
                                         List<String> availableModules = new ArrayList<>(requestedModules);
                                         String currentModule = availableModules.get(0);
-                                        return sendMessage(uuid, generateRequestDto.getAppDetails().getAppId(), generateRequestDto.getUserId(), currentModule)
+                                        return sendMessage(uuid, generateRequestDto.getAppDetails().getAppId(), generateRequestDto.getUserId(), currentModule,generateRequestDto.getReConfirmText())
                                                 .onItem()
                                                 .transformToUni(
                                                         voidUni -> putAvailableVerificationInCache(uuid, generateRequestDto.getAppDetails().getAppId(),
@@ -106,14 +109,22 @@ public class CoreModuleRegistryVerifyService {
         return Uni.createFrom().voidItem().invoke(voidItem -> availableVerificationCacheDtoRemoteCache.putAsync(uuid, availableVerificationCacheDto));
     }
 
-    public Uni<Void> sendMessage(String uuid, int appId, String userId, String serviceName) {
+    public Uni<Void> sendMessage(String uuid, int appId, String userId, String serviceName,String reconfirmValue) {
         return Uni.createFrom().voidItem().onItem().transformToUni(voidItem -> {
             MessageVerificationGenerateDto messageVerificationGenerateDto = MessageVerificationGenerateDto.builder()
                     .code(uuid).userId(userId)
                     .appId(appId).build();
-            if (serviceName.equals(ApplicationConstants.MODULE_RECONFIRM))
-                return messageBrokerService.emitReconfirmVerifyGenerate(messageVerificationGenerateDto);
-            else if (serviceName.equals(ApplicationConstants.MODULE_TOTP)) {
+            if (serviceName.equals(ApplicationConstants.MODULE_RECONFIRM)) {
+                ReconfirmMessageVerificationGenerateDto reconfirmMessageVerificationGenerateDto=ReconfirmMessageVerificationGenerateDto.builder()
+                        .code(uuid).userId(userId)
+                        .appId(appId).reconfirmFields(ReconfirmMessageVerificationGenerateDto.ReconfirmFields.builder()
+                                .reconfirmValue(reconfirmValue)
+                                .isVisible(true)
+                                .hintMessage("")
+                                .build())
+                        .build();
+                return messageBrokerService.emitReconfirmVerifyGenerate(reconfirmMessageVerificationGenerateDto);
+            }else if (serviceName.equals(ApplicationConstants.MODULE_TOTP)) {
                 return messageBrokerService.emitTotpVerifyGenerate(messageVerificationGenerateDto);
             }
             return Uni.createFrom().nullItem();
@@ -140,7 +151,6 @@ public class CoreModuleRegistryVerifyService {
                         return CryptoAlgoUtil.calculateSHA256(verifyStatusRequestDto.getCodeVerifier())
                                 .onItem().transformToUni(sha256 -> {
                                     if (sha256.equals(availableVerificationCacheDto.getCodeChallenge())) {
-                                        System.out.println("Status verify"+availableVerificationCacheDto.getStatus());
                                         if (!availableVerificationCacheDto.getStatus().equals(ApplicationConstants.STATUS_SUCCESS)) {
                                             return Uni.createFrom().failure(new NonFatalException(1002, "Verification not completed"));
                                         } else {
@@ -159,7 +169,6 @@ public class CoreModuleRegistryVerifyService {
     }
 
     public Uni<VerifyViewResponseDto> getViewDetails(String code) {
-        System.out.println("Loading"+code);
         return Uni.createFrom().item(availableVerificationCacheDtoRemoteCache.get(code))
                 .onItem().transformToUni(availableVerificationCacheDto -> {
                     if (availableVerificationCacheDto == null) {

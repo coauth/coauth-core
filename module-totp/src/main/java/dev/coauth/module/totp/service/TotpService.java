@@ -76,7 +76,6 @@ public class TotpService {
 
 
     public Uni<String> generateQR(RegisterViewRequestDto registerViewRequestDto) {
-        System.out.println("QR CODE"+registerViewRequestDto.getAppCode());
         return Uni.createFrom().item(totpRegisterCache.get(registerViewRequestDto.getAppCode()))
                 .onItem().transformToUni(totpRegisterCacheDto -> {
                     if (totpRegisterCacheDto == null) {

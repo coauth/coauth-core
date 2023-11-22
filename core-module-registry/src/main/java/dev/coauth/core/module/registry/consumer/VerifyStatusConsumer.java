@@ -34,6 +34,11 @@ public class VerifyStatusConsumer {
                 messageRegisterStatusDto.getUserId(), messageRegisterStatusDto.getStatus());
     }
 
-
+    @Incoming("reconfirm-verify-status")
+    @NonBlocking
+    public Uni<Void> consumeReconfirmVerifyStatus(MessageVerificationStatusDto messageVerificationStatusDto) {
+        return coreModuleRegistryVerifyService.updateCache(messageVerificationStatusDto.getCode(), messageVerificationStatusDto.getAppId(),
+                messageVerificationStatusDto.getUserId(), messageVerificationStatusDto.getStatus());
+    }
 
 }

@@ -38,7 +38,6 @@ public class APIKeyValidationFilterGateway extends AbstractGatewayFilterFactory<
     }
 
     private Mono<CoreAppAuthMstrProperties> isAuthorizationValid(String authorizationHeader, ServerWebExchange exchange) {
-        System.out.println("HERE NEXT");
         if(authorizationHeader==null || authorizationHeader.trim().isEmpty()){
             return Mono.error(new IllegalStateException("Unauthorized"));
         }
@@ -53,7 +52,6 @@ public class APIKeyValidationFilterGateway extends AbstractGatewayFilterFactory<
                 )
                 .bodyToMono(AuthGuardResponseDto.class)
                 .map(authGuardResponseDto -> {
-                    System.out.println("BODY:"+authGuardResponseDto.getData());
                     // Process the response body here
                     return authGuardResponseDto.getData(); // Return true or false based on your validation logic
                 }));
@@ -68,16 +66,13 @@ public class APIKeyValidationFilterGateway extends AbstractGatewayFilterFactory<
 
     @Override
     public GatewayFilter apply(Config config) {
-        System.out.println("HERE STARTED");
         return (exchange, chain) -> {
             try {
                 ServerHttpRequest request = exchange.getRequest();
 
                 String authorizationHeader = request.getHeaders().getFirst(ApplicationConstants.COAUTH_API_KEY_HEADER_NAME);
-                System.out.println("authorizationHeader:"+authorizationHeader);
                 return isAuthorizationValid(authorizationHeader, exchange)
                         .flatMap(coreAppAuthMstrProperties -> {
-                            System.out.println(coreAppAuthMstrProperties);
                             // If the API key is valid, proceed with the filter chain
                             return modifyRequestBodyFilter
                                     .apply(new ModifyRequestBodyGatewayFilterFactory.Config()
@@ -85,7 +80,6 @@ public class APIKeyValidationFilterGateway extends AbstractGatewayFilterFactory<
                                     .filter(exchange, chain);
                         })
                         .onErrorResume(IllegalStateException.class, unauthorizedException -> {
-                            System.out.println("Entered Illegal state");
                             return onError(exchange, "You are not allowed to proceed further", HttpStatus.UNAUTHORIZED);
                         })
                         .onErrorResume(Exception.class, e -> {

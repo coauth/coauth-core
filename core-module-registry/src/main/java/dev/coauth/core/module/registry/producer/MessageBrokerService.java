@@ -2,6 +2,7 @@ package dev.coauth.core.module.registry.producer;
 
 import dev.coauth.core.module.messaging.MessageRegisterGenerateDto;
 import dev.coauth.core.module.messaging.MessageVerificationGenerateDto;
+import dev.coauth.core.module.messaging.ReconfirmMessageVerificationGenerateDto;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.reactive.messaging.MutinyEmitter;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -17,7 +18,7 @@ public class MessageBrokerService {
 
     @Inject
     @Channel("reconfirm-verify-generate")
-    MutinyEmitter<MessageVerificationGenerateDto> reconfirmVerifyGenerateEmitter;
+    MutinyEmitter<ReconfirmMessageVerificationGenerateDto> reconfirmVerifyGenerateEmitter;
 
 
     @Inject
@@ -29,8 +30,8 @@ public class MessageBrokerService {
         return totpVerifyGenerateEmitter.send(messageVerificationGenerateDto);
     }
 
-    public Uni<Void> emitReconfirmVerifyGenerate(MessageVerificationGenerateDto messageVerificationGenerateDto){
-        return reconfirmVerifyGenerateEmitter.send(messageVerificationGenerateDto);
+    public Uni<Void> emitReconfirmVerifyGenerate(ReconfirmMessageVerificationGenerateDto reconfirmMessageVerificationGenerateDto){
+        return reconfirmVerifyGenerateEmitter.send(reconfirmMessageVerificationGenerateDto);
     }
 
     public Uni<Void> emitTotpRegisterGenerate(MessageRegisterGenerateDto messageVerificationGenerateDto){

@@ -56,7 +56,6 @@ public class CoreModuleRegistryVerifyEndpoint {
     @POST
     @Path("/load")
     public Uni<Response> load(@Valid VerifyViewRequestDto verifyViewRequestDto)   {
-        System.out.println("LOADING");
         return coreModuleRegistryService.getViewDetails(verifyViewRequestDto.getCode())
                 .onItem().transform(entity -> {
                     return Response.ok()

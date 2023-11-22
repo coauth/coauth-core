@@ -43,6 +43,12 @@ spring:
             - Path=/api/coauth/module/totp/register/**
           filters:
             - StripPrefix=1
+        - id: module-reconfirm-verification-routes
+          uri: ${MODULE_RECONFIRM_SERVICE:http://localhost:8085}
+          predicates:
+            - Path=/api/coauth/module/reconfirm/verification/**
+          filters:
+            - StripPrefix=1
         - id: ui-plugin
           uri: ${UI_PLUGIN_SERVICE:http://localhost:3000}
           predicates:
@@ -116,6 +122,12 @@ spring:
             - Path=/api/coauth/module/totp/register/**
           filters:
             - StripPrefix=1
+        - id: module-reconfirm-verification-routes
+          uri: ${MODULE_RECONFIRM_SERVICE:http://localhost:8085}
+          predicates:
+            - Path=/api/coauth/module/reconfirm/verification/**
+          filters:
+            - StripPrefix=1
         - id: ui-plugin
           uri: ${UI_PLUGIN_SERVICE:http://localhost:3000}
           predicates:
@@ -185,6 +197,12 @@ spring:
           uri: ${MODULE_TOTP_SERVICE:http://localhost:8083}
           predicates:
             - Path=/api/coauth/module/totp/register/**
+          filters:
+            - StripPrefix=1
+        - id: module-reconfirm-verification-routes
+          uri: ${MODULE_RECONFIRM_SERVICE:http://localhost:8085}
+          predicates:
+            - Path=/api/coauth/module/reconfirm/verification/**
           filters:
             - StripPrefix=1
         - id: ui-plugin

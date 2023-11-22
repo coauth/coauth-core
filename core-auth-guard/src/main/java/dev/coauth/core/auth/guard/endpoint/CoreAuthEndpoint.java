@@ -22,7 +22,6 @@ public class CoreAuthEndpoint {
     @GET
     @Path("/authenticate/with-api-key")
     public Uni<Response> authenticate(@HeaderParam("COAUTH-API-KEY") String coAuthApiKey)   {
-        System.out.println("ENDPOINT CALLED"+coAuthApiKey);
         if(coAuthApiKey == null || coAuthApiKey.isEmpty()){
             return Uni.createFrom().item(formatFailureResponse(new UnauthorizedException("Invalid API Key")));
         }else{

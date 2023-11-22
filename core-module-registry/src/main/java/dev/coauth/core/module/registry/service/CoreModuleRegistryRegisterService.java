@@ -92,7 +92,6 @@ public class CoreModuleRegistryRegisterService {
     }
 
     public Uni<Void> sendMessage(String uuid, int appId, String userId, String serviceName) {
-        System.out.println("Sending message for " + serviceName);
         return Uni.createFrom().voidItem().onItem().transformToUni(voidItem -> {
             MessageRegisterGenerateDto messageRegisterGenerateDto = MessageRegisterGenerateDto.builder()
                     .code(uuid).userId(userId)
@@ -131,7 +130,6 @@ public class CoreModuleRegistryRegisterService {
                         return CryptoAlgoUtil.calculateSHA256(registerStatusRequestDto.getCodeVerifier())
                                 .onItem().transformToUni(sha256 -> {
                                     if (sha256.equals(availableRegisterCacheDto.getCodeChallenge())) {
-                                        System.out.println("Status" + availableRegisterCacheDto.getStatus());
                                         if (!availableRegisterCacheDto.getStatus().equals(ApplicationConstants.STATUS_SUCCESS)) {
                                             return Uni.createFrom().failure(new NonFatalException(1002, "Verification not completed"));
                                         } else {

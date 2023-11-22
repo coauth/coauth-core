@@ -26,21 +26,11 @@ public class RequestBodyRewrite implements RewriteFunction<String, String> {
                        @Override
     public Publisher<String> apply(ServerWebExchange exchange, String body) {
         try {
-            System.out.println("Original Body: " + body);
-
-            System.out.println("coreAppAuthMstrPropertiescoreAppAuthMstrProperties " + coreAppAuthMstrProperties);
-
-            // Example: Convert the JSON body to a Map and modify it
             Map<String, Object> map = convertJsonToMap(body);
             map.put("appDetails", coreAppAuthMstrProperties);
-
             String modifiedBody = convertMapToJson(map);
-            System.out.println("Modified Body: " + modifiedBody);
-
             return Mono.just(modifiedBody);
         } catch (Exception ex) {
-            ex.printStackTrace();
-
             // Throw a RuntimeException for simplicity; handle as needed in your actual implementation
             throw new IllegalStateException("An error occurred while transforming the request body in class RequestBodyRewrite.");
         }
