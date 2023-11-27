@@ -25,7 +25,6 @@ public class TotpRegistrationEndpoint {
    /* @POST
     @Path("/generate-request")
     public Uni<Response> generate(@Valid RegisterGenerateRequestDto registerGenerateRequestDto) {
-        System.out.println(registerGenerateRequestDto.getAppId());
         return totpService.generateSecret(registerGenerateRequestDto)
                 .onItem().transform(entity -> {
                     return Response.ok()

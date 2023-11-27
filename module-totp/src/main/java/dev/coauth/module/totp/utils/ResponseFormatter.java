@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.Response;
 
 public class ResponseFormatter {
     public static Response formatFailureResponse(Throwable failure) {
+        failure.printStackTrace();
         if (failure instanceof NonFatalException) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(GenericResponseDto.builder().error(new GenericResponseDto.ErrorDetails(((NonFatalException) failure).getErrCode(), failure.getMessage())).build())

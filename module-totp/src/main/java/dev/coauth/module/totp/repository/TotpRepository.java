@@ -16,10 +16,22 @@ public class TotpRepository implements PanacheRepositoryBase<TotpMstrEntity,Stri
     @Inject
     Mutiny.SessionFactory sessionFactory;
 
-
-    @WithSession
     public Uni<TotpMstrEntity> get(TotpMstrEntity totpMstrEntity){
-        return find("appId = ?1 and userId = ?2", totpMstrEntity.getAppId(), totpMstrEntity.getUserId()).firstResult();
+        return sessionFactory.withSession(session -> session
+                .createQuery("from TotpMstrEntity t WHERE appId = :appId AND userId = :userId", TotpMstrEntity.class)
+                .setParameter("appId", totpMstrEntity.getAppId())
+                .setParameter("userId", totpMstrEntity.getUserId())
+                .getSingleResult()
+                .onItem().transformToUni(result -> Uni.createFrom().item(result))
+                .onFailure().recoverWithUni(throwable -> {
+                    if (throwable instanceof NoResultException) {
+                        return Uni.createFrom().nullItem();
+                    } else {
+                        return Uni.createFrom().failure(throwable);
+                    }
+                })
+        );
+        //return find("appId = ?1 and userId = ?2", totpMstrEntity.getAppId(), totpMstrEntity.getUserId()).firstResult();
        /* return Uni.createFrom().deferred(() -> sessionFactory.withSession(session -> session
                 .createQuery("SELECT t FROM TotpMstrEntity t WHERE appId = :appId AND userId = :userId", TotpMstrEntity.class)
                 .setParameter("appId", totpMstrEntity.getAppId())
@@ -36,9 +48,10 @@ public class TotpRepository implements PanacheRepositoryBase<TotpMstrEntity,Stri
         ));*/
     }
 
-    @WithSession
-    @WithTransaction
     public Uni<TotpMstrEntity> save(TotpMstrEntity totpMstrEntity){
-        return persist(totpMstrEntity);
+        return sessionFactory.withTransaction((session,tx) -> session.persist(totpMstrEntity)
+                .onItem().transformToUni(result -> Uni.createFrom().item(totpMstrEntity))
+                .onFailure().recoverWithUni(throwable -> Uni.createFrom().failure(throwable)));
+//        return persist(totpMstrEntity);
     }
 }

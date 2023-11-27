@@ -1,11 +1,13 @@
 package dev.coauth.core.module.totp.cache;
 
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.infinispan.protostream.annotations.ProtoFactory;
 import org.infinispan.protostream.annotations.ProtoField;
 
 
 @Builder
+@NoArgsConstructor
 public class AvailableVerificationCacheDto {
     private String code;
     private Integer appId;

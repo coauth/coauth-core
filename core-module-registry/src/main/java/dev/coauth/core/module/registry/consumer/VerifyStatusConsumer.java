@@ -9,9 +9,16 @@ import io.smallrye.common.annotation.NonBlocking;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
-@ApplicationScoped
+@Path("/coauth/module-registry/internal")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class VerifyStatusConsumer {
 
     @Inject
@@ -20,22 +27,22 @@ public class VerifyStatusConsumer {
     @Inject
     CoreModuleRegistryRegisterService coreModuleRegistryRegisterService;
 
-    @Incoming("totp-verify-status")
-    @NonBlocking
+    @POST
+    @Path("/totp-verify-status")
     public Uni<Void> consumeTotpVerifyStatus(MessageVerificationStatusDto messageVerificationStatusDto) {
             return coreModuleRegistryVerifyService.updateCache(messageVerificationStatusDto.getCode(), messageVerificationStatusDto.getAppId(),
                     messageVerificationStatusDto.getUserId(), messageVerificationStatusDto.getStatus());
     }
 
-    @Incoming("totp-register-status")
-    @NonBlocking
+    @POST
+    @Path("/totp-register-status")
     public Uni<Void> consumeTotpRegisterStatus(MessageRegisterStatusDto messageRegisterStatusDto) {
         return coreModuleRegistryRegisterService.updateCache(messageRegisterStatusDto.getCode(), messageRegisterStatusDto.getAppId(),
                 messageRegisterStatusDto.getUserId(), messageRegisterStatusDto.getStatus());
     }
 
-    @Incoming("reconfirm-verify-status")
-    @NonBlocking
+    @POST
+    @Path("/reconfirm-verify-status")
     public Uni<Void> consumeReconfirmVerifyStatus(MessageVerificationStatusDto messageVerificationStatusDto) {
         return coreModuleRegistryVerifyService.updateCache(messageVerificationStatusDto.getCode(), messageVerificationStatusDto.getAppId(),
                 messageVerificationStatusDto.getUserId(), messageVerificationStatusDto.getStatus());

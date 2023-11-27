@@ -8,33 +8,26 @@ import io.smallrye.reactive.messaging.MutinyEmitter;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 @ApplicationScoped
 public class MessageBrokerService {
 
-    @Inject
-    @Channel("totp-verify-generate")
-    MutinyEmitter<MessageVerificationGenerateDto> totpVerifyGenerateEmitter;
+    @RestClient
+    ModuleTotpConnectionService moduleTotpConnectionService;
 
-    @Inject
-    @Channel("reconfirm-verify-generate")
-    MutinyEmitter<ReconfirmMessageVerificationGenerateDto> reconfirmVerifyGenerateEmitter;
-
-
-    @Inject
-    @Channel("totp-register-generate")
-    MutinyEmitter<MessageRegisterGenerateDto> totpRegisterGenerateEmitter;
-
+    @RestClient
+    ModuleReconfirmConnectionService moduleReconfirmConnectionService;
 
     public Uni<Void> emitTotpVerifyGenerate(MessageVerificationGenerateDto messageVerificationGenerateDto){
-        return totpVerifyGenerateEmitter.send(messageVerificationGenerateDto);
+        return moduleTotpConnectionService.emitTotpVerifyGenerate(messageVerificationGenerateDto);
     }
 
     public Uni<Void> emitReconfirmVerifyGenerate(ReconfirmMessageVerificationGenerateDto reconfirmMessageVerificationGenerateDto){
-        return reconfirmVerifyGenerateEmitter.send(reconfirmMessageVerificationGenerateDto);
+        return moduleReconfirmConnectionService.emitReconfirmVerifyGenerate(reconfirmMessageVerificationGenerateDto);
     }
 
     public Uni<Void> emitTotpRegisterGenerate(MessageRegisterGenerateDto messageVerificationGenerateDto){
-        return totpRegisterGenerateEmitter.send(messageVerificationGenerateDto);
+        return moduleTotpConnectionService.emitTotpRegisterGenerate(messageVerificationGenerateDto);
     }
 }

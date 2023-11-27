@@ -17,14 +17,26 @@ public class ModuleReconfirmRepository implements PanacheRepositoryBase<ModuleRe
     Mutiny.SessionFactory sessionFactory;
 
 
-    @WithSession
+//    @WithSession
     public Uni<ModuleReconfirmMstrEntity> get(ModuleReconfirmMstrEntity moduleReconfirmMstrEntity){
-        return find("appId = ?1 and userId = ?2 and status= ?3", moduleReconfirmMstrEntity.getAppId(), moduleReconfirmMstrEntity.getUserId(), ApplicationConstants.STATUS_DISABLED).firstResult();
+        return sessionFactory.withSession(session -> session
+                .createQuery("from ModuleReconfirmMstrEntity t WHERE appId = :appId AND userId = :userId and status = :status", ModuleReconfirmMstrEntity.class)
+                .setParameter("appId", moduleReconfirmMstrEntity.getAppId())
+                .setParameter("userId", moduleReconfirmMstrEntity.getUserId())
+                .setParameter("status", ApplicationConstants.STATUS_DISABLED)
+                .getSingleResult()
+                .onItem().transformToUni(result -> Uni.createFrom().item(result))
+                .onFailure().recoverWithUni(throwable -> Uni.createFrom().nullItem())
+        );
+//        return find("appId = ?1 and userId = ?2 and status= ?3", moduleReconfirmMstrEntity.getAppId(), moduleReconfirmMstrEntity.getUserId(), ApplicationConstants.STATUS_DISABLED).firstResult();
     }
 
-    @WithSession
-    @WithTransaction
+//    @WithSession
+//    @WithTransaction
     public Uni<ModuleReconfirmMstrEntity> save(ModuleReconfirmMstrEntity moduleReconfirmMstrEntity){
-        return persist(moduleReconfirmMstrEntity);
+        return sessionFactory.withTransaction((session,tx) -> session.persist(moduleReconfirmMstrEntity)
+                .onItem().transformToUni(result -> Uni.createFrom().item(moduleReconfirmMstrEntity))
+                .onFailure().recoverWithUni(throwable -> Uni.createFrom().failure(throwable)));
+//        return persist(moduleReconfirmMstrEntity);
     }
 }

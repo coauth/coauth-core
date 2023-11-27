@@ -1,11 +1,13 @@
 package dev.coauth.core.module.messaging;
 
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.infinispan.protostream.annotations.ProtoFactory;
 import org.infinispan.protostream.annotations.ProtoField;
 
 
 @Builder
+@NoArgsConstructor
 public class MessageVerificationGenerateDto {
     private String code;
     private Integer appId;

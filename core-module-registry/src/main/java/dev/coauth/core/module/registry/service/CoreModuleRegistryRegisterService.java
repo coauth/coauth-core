@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 @ApplicationScoped
 public class CoreModuleRegistryRegisterService {
 
+    @Inject
     @Remote("available_modules_register")
     RemoteCache<String, AvailableRegisterCacheDto> availableRegisterCacheDtoRemoteCache;
 
@@ -93,13 +94,14 @@ public class CoreModuleRegistryRegisterService {
 
     public Uni<Void> sendMessage(String uuid, int appId, String userId, String serviceName) {
         return Uni.createFrom().voidItem().onItem().transformToUni(voidItem -> {
-            MessageRegisterGenerateDto messageRegisterGenerateDto = MessageRegisterGenerateDto.builder()
-                    .code(uuid).userId(userId)
-                    .appId(appId).build();
             if (serviceName.equals(ApplicationConstants.MODULE_TOTP)) {
+                MessageRegisterGenerateDto messageRegisterGenerateDto = MessageRegisterGenerateDto.builder()
+                        .code(uuid).userId(userId)
+                        .appId(appId).build();
                 return messageBrokerService.emitTotpRegisterGenerate(messageRegisterGenerateDto);
+            }else{
+                return Uni.createFrom().nullItem();
             }
-            return Uni.createFrom().nullItem();
         });
     }
 
