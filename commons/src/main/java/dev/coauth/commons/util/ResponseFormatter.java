@@ -1,7 +1,7 @@
 package dev.coauth.commons.util;
 
-import dev.coauth.core.dto.GenericResponseDto;
-import dev.coauth.core.exception.NonFatalException;
+import dev.coauth.commons.dto.GenericResponseDto;
+import dev.coauth.commons.exception.NonFatalException;
 import jakarta.ws.rs.core.Response;
 
 public class ResponseFormatter {

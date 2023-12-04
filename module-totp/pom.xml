@@ -2,7 +2,6 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>dev.coauth</groupId>
   <artifactId>module.totp</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <properties>
@@ -18,6 +17,11 @@
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
   </properties>
+  <parent>
+    <artifactId>coauth-core</artifactId>
+    <groupId>dev.coauth</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -30,6 +34,12 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <dependency>
+      <artifactId>commons</artifactId>
+      <groupId>dev.coauth</groupId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-hibernate-reactive-panache</artifactId>

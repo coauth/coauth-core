@@ -1,7 +1,7 @@
 package dev.coauth.core.module.registry.repository;
 
+import dev.coauth.commons.util.ApplicationConstants;
 import dev.coauth.core.module.registry.entity.CoreModuleRegistryMstrEntity;
-import dev.coauth.core.utils.ApplicationConstants;
 import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.quarkus.hibernate.reactive.panache.common.WithSession;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;

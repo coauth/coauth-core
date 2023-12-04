@@ -1,5 +1,6 @@
 package dev.coauth.module.reconfirm.service;
 
+import dev.coauth.commons.util.ApplicationConstants;
 import dev.coauth.module.messaging.MessageVerificationStatusDto;
 import dev.coauth.module.messaging.ReconfirmMessageVerificationGenerateDto;
 import dev.coauth.module.reconfirm.cache.ReconfirmVerificationCacheDto;
@@ -9,7 +10,6 @@ import dev.coauth.module.reconfirm.entity.ModuleReconfirmMstrEntity;
 import dev.coauth.module.reconfirm.exception.NonFatalException;
 import dev.coauth.module.reconfirm.producer.MessageBrokerService;
 import dev.coauth.module.reconfirm.repository.ModuleReconfirmRepository;
-import dev.coauth.module.reconfirm.utils.ApplicationConstants;
 import io.quarkus.infinispan.client.Remote;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <dependencies>
+  </dependencies>
+  <description>Co-Auth Core is a cloud native microservice application that enables plugin for post primary authentication modules.
+  </description>
+
+  <artifactId>coauth-core</artifactId>
+  <groupId>dev.coauth</groupId>
+  <modelVersion>4.0.0</modelVersion>
+  <modules>
+    <module>core-api-gateway</module>
+    <module>core-auth-guard</module>
+    <module>core-module-registry</module>
+    <module>module-reconfirm</module>
+    <module>module-totp</module>
+    <module>commons</module>
+  </modules>
+  <name>coauth-core</name>
+  <packaging>pom</packaging>
+  <properties>
+    <java.version>17</java.version>
+    <compiler-plugin.version>3.11.0</compiler-plugin.version>
+
+  </properties>
+  <version>0.0.1-SNAPSHOT</version>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${compiler-plugin.version}</version>
+        <configuration>
+          <source>17</source>
+          <target>17</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

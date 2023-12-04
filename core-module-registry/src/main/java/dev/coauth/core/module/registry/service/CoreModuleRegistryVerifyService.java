@@ -1,5 +1,7 @@
 package dev.coauth.core.module.registry.service;
 
+import dev.coauth.commons.util.ApplicationConstants;
+import dev.coauth.commons.util.CryptoAlgoUtil;
 import dev.coauth.core.exception.NonFatalException;
 import dev.coauth.core.module.messaging.ReconfirmMessageVerificationGenerateDto;
 import dev.coauth.core.module.registry.dto.VerifyGenerateRequestDto;
@@ -10,8 +12,6 @@ import dev.coauth.core.module.registry.repository.CoreModuleRegistryMstrReposito
 import dev.coauth.core.module.registry.producer.MessageBrokerService;
 import dev.coauth.core.module.totp.cache.AvailableVerificationCacheDto;
 import dev.coauth.core.module.messaging.MessageVerificationGenerateDto;
-import dev.coauth.core.utils.ApplicationConstants;
-import dev.coauth.core.utils.CryptoAlgoUtil;
 import io.quarkus.infinispan.client.Remote;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;

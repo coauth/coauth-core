@@ -1,5 +1,8 @@
 package dev.coauth.module.totp.service;
 
+import dev.coauth.commons.util.ApplicationConstants;
+import dev.coauth.commons.util.CryptoAlgoUtil;
+import dev.coauth.commons.util.DateTimeUtils;
 import dev.coauth.module.messaging.MessageRegisterStatusDto;
 import dev.coauth.module.messaging.MessageVerificationStatusDto;
 import dev.coauth.module.totp.cache.TotpRegisterCacheDto;
@@ -9,9 +12,6 @@ import dev.coauth.module.totp.entity.TotpMstrEntity;
 import dev.coauth.module.totp.exception.NonFatalException;
 import dev.coauth.module.totp.producer.MessageBrokerService;
 import dev.coauth.module.totp.repository.TotpRepository;
-import dev.coauth.module.totp.utils.ApplicationConstants;
-import dev.coauth.module.totp.utils.CryptoAlgoUtil;
-import dev.coauth.module.totp.utils.DateTimeUtils;
 import io.quarkus.infinispan.client.Remote;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;

@@ -1,9 +1,9 @@
 package dev.coauth.module.totp.endpoint;
 
 
+import dev.coauth.commons.util.ResponseFormatter;
 import dev.coauth.module.totp.dto.*;
 import dev.coauth.module.totp.service.TotpService;
-import dev.coauth.module.totp.utils.ResponseFormatter;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
