@@ -1,4 +1,4 @@
-package dev.coauth.core.exception;
+package dev.coauth.commons.exception;
 
 public class NonFatalException  extends Exception{
     private final int errCode;

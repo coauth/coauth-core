@@ -1,4 +1,4 @@
-package dev.coauth.core.utils;
+package dev.coauth.commons.util;
 
 import dev.coauth.core.dto.GenericResponseDto;
 import dev.coauth.core.exception.NonFatalException;

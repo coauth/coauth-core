@@ -1,4 +1,4 @@
-package dev.coauth.module.totp.utils;
+package dev.coauth.commons.util;
 
 import io.smallrye.mutiny.Uni;
 
