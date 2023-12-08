@@ -1,0 +1,66 @@
+# Docker compose file for Co-Auth
+version: "3.8"
+services:
+  gateway:
+    image: coauth-core-api-gateway:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - MODULE_REGISTRY_SERVICE=http://localhost:8082
+      - AUTH_GUARD_SERVICE=http://localhost:8081/core/auth-guard
+      - MODULE_TOTP_SERVICE=http://localhost:8083
+      - MODULE_RECONFIRM_SERVICE=http://localhost:8085
+      - UI_PLUGIN_SERVICE=http://localhost:3000
+      - EXAMPLE_APP_SERVICE=http://localhost:8084
+    network_mode: host
+  auth-guard:
+    image: coauth-core-auth-guard:latest
+    ports:
+      - "8081:8080"
+    environment:
+      - POSTGRESQL_SERVICE_NAME=host.docker.internal:5432
+      - POSTGRESQL_USER=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - COAUTH_TRACER_ENDPOINT=http://host.docker.internal:4317
+      - COAUTH_TRACER_API_KEY=no-secret
+  module-registry:
+    image: coauth-core-module-registry:latest
+    ports:
+      - "8082:8080"
+    environment:
+      - POSTGRESQL_SERVICE_NAME=localhost:5432
+      - POSTGRESQL_USER=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - INFINISPAN_USER=admin
+      - INFINISPAN_PASSWORD=password
+      - COAUTH_MODULE_TOTP=http://localhost:8083
+      - COAUTH_MODULE_RECONFIRM=http://localhost:8085
+    network_mode: host
+  module-totp:
+    image: coauth-module-totp:latest
+    ports:
+      - "8083:8080"
+    environment:
+      - POSTGRESQL_USER=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - INFINISPAN_USER=admin
+      - INFINISPAN_PASSWORD=password
+      - COAUTH_MODULE_REGISTRY=http://localhost:8082
+    network_mode: host
+  module-reconfirm:
+    image: coauth-module-reconfirm:latest
+    ports:
+      - "8085:8080"
+    environment:
+      - POSTGRESQL_USER=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - INFINISPAN_USER=admin
+      - INFINISPAN_PASSWORD=password
+      - COAUTH_MODULE_REGISTRY=http://localhost:8082
+    network_mode: host
+
+
+
+
+
+

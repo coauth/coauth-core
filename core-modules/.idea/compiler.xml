@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Annotation profile for coauth-core" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.22/lombok-1.18.22.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct-processor/1.4.2.Final/mapstruct-processor-1.4.2.Final.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct/1.4.2.Final/mapstruct-1.4.2.Final.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/infinispan/protostream/protostream-processor/4.6.5.Final/protostream-processor-4.6.5.Final.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/jboss/logging/jboss-logging/3.5.0.Final/jboss-logging-3.5.0.Final.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/infinispan/protostream/protostream/4.6.5.Final/protostream-4.6.5.Final.jar" />
+          <entry name="$MAVEN_REPOSITORY$/com/squareup/protoparser/4.0.3/protoparser-4.0.3.jar" />
+          <entry name="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-core/2.14.1/jackson-core-2.14.1.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/javassist/javassist/3.29.1-GA/javassist-3.29.1-GA.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/easytesting/fest-assert-core/2.0M10/fest-assert-core-2.0M10.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/easytesting/fest-util/1.2.5/fest-util-1.2.5.jar" />
+          <entry name="$MAVEN_REPOSITORY$/junit/junit/4.13.2/junit-4.13.2.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/mockito/mockito-core/4.3.1/mockito-core-4.3.1.jar" />
+          <entry name="$MAVEN_REPOSITORY$/net/bytebuddy/byte-buddy/1.12.7/byte-buddy-1.12.7.jar" />
+          <entry name="$MAVEN_REPOSITORY$/net/bytebuddy/byte-buddy-agent/1.12.7/byte-buddy-agent-1.12.7.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/objenesis/objenesis/3.2/objenesis-3.2.jar" />
+        </processorPath>
+        <module name="core-auth-guard" />
+        <module name="module.reconfirm" />
+        <module name="core-module-registry" />
+        <module name="commons" />
+        <module name="module.totp" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="commons" options="-parameters" />
+      <module name="core-auth-guard" options="-parameters" />
+      <module name="core-module-registry" options="-parameters" />
+      <module name="module.reconfirm" options="-parameters" />
+      <module name="module.totp" options="-parameters" />
+    </option>
+  </component>
+</project>

@@ -5,6 +5,10 @@ import dev.coauth.core.auth.guard.repository.CoreAppAuthMstrRepository;
 import dev.coauth.core.auth.guard.repository.CoreApplicationMstrRepository;
 import dev.coauth.core.auth.guard.entity.CoreAppAuthMstrEntity;
 import dev.coauth.core.auth.guard.entity.CoreApplicationMstrEntity;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -28,7 +32,8 @@ public class ApiKeyCacheRefreshScheduler {
     @Inject
     ApiKeyCacheBean apiKeyCacheBean;
 
-   /**
+
+    /**
     * Scheduler is being called on startup so this code is not needed.
     *
     void onStart(@Observes StartupEvent event, Vertx vertx, Mutiny.SessionFactory factory) {
@@ -48,8 +53,13 @@ public class ApiKeyCacheRefreshScheduler {
     }*/
 
     @Scheduled(every = "{coauth.core.auth-guard.refresh-api-keys.interval}", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+    @WithSpan("scheduler:refresh-api-keys")
     Uni<Void> reFetchKeys() {
-        System.out.println("REFRESH KEYS");
+        return Uni.createFrom().voidItem()
+                .onItem().transformToUni(v -> processKeys());
+    }
+
+    private Uni<Void> processKeys() {
         return Uni.combine().all()
                 .unis(coreAppAuthMstrRepository.getActiveKeys(), coreApplicationMstrRepository.getActiveApps())
                 .asTuple()

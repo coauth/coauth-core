@@ -1,6 +1,7 @@
 package dev.coauth.core.auth.guard.repository;
 
 import dev.coauth.core.auth.guard.entity.CoreAppAuthMstrEntity;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.quarkus.hibernate.reactive.panache.common.WithSession;
 import io.smallrye.mutiny.Uni;
@@ -16,7 +17,7 @@ public class CoreAppAuthMstrRepository implements PanacheRepositoryBase<CoreAppA
     @Inject
     Mutiny.SessionFactory sessionFactory;
 
-    @WithSession
+    @WithSpan
     public Uni<List<CoreAppAuthMstrEntity>> getActiveKeys(){
         return
                 sessionFactory.withSession( session ->

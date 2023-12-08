@@ -7,6 +7,23 @@
 
 version: "3.8"
 services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: coauth
+    volumes:
+      - ../scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+  infinispan:
+    image: jboss/infinispan-server:latest
+    environment:
+      USER: admin
+      PASS: password
+    ports:
+      - "11222:11222"
   elasticsearch:
     image: elasticsearch:7.9.2
     deploy:
