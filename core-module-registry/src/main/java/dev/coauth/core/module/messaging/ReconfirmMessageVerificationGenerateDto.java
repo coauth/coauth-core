@@ -2,12 +2,14 @@ package dev.coauth.core.module.messaging;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.infinispan.protostream.annotations.ProtoFactory;
 import org.infinispan.protostream.annotations.ProtoField;
 
 
 @Builder
 @Data
+@NoArgsConstructor
 public class ReconfirmMessageVerificationGenerateDto {
     @ProtoField(number = 1)
     private String code;

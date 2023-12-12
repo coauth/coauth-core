@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class CoreModuleRegistryVerifyService {
 
+    @Inject
     @Remote("available_modules_verify")
     RemoteCache<String, AvailableVerificationCacheDto> availableVerificationCacheDtoRemoteCache;
 

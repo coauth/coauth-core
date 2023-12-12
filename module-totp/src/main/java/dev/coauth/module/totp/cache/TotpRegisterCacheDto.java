@@ -11,7 +11,7 @@ import org.infinispan.protostream.annotations.ProtoField;
 import java.sql.Timestamp;
 import java.util.Objects;
 
-
+@NoArgsConstructor
 public class TotpRegisterCacheDto {
     private String code;
     private Integer appId;

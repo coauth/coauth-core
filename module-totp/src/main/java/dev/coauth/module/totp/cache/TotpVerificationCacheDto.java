@@ -1,11 +1,12 @@
 package dev.coauth.module.totp.cache;
 
+import lombok.NoArgsConstructor;
 import org.infinispan.protostream.annotations.ProtoFactory;
 import org.infinispan.protostream.annotations.ProtoField;
 
 import java.util.Date;
 
-
+@NoArgsConstructor
 public class TotpVerificationCacheDto {
     private String code;
     private Integer appId;
