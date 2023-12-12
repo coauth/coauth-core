@@ -6,6 +6,10 @@ docker tag godwinpinto/coauth-core-api-gateway:0.0.1-SNAPSHOT quay.io/coauth/coa
 docker push quay.io/coauth/coauth-core-api-gateway:0.0.1-SNAPSHOT
 
 cd ..
+cd commons
+./mvnw clean package
+
+cd ..
 cd core-auth-guard
 ./mvnw clean package
 docker build -f src/main/docker/Dockerfile.jvm -t godwinpinto/coauth-core-auth-guard:1.0.0-SNAPSHOT .

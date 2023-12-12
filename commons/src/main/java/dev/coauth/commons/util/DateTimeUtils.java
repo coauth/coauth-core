@@ -1,4 +1,4 @@
-package dev.coauth.module.reconfirm.utils;
+package dev.coauth.commons.util;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;

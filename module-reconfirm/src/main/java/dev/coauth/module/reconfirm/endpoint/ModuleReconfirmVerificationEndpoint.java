@@ -1,9 +1,9 @@
 package dev.coauth.module.reconfirm.endpoint;
 
 
+import dev.coauth.commons.util.ResponseFormatter;
 import dev.coauth.module.reconfirm.dto.*;
 import dev.coauth.module.reconfirm.service.ReconfirmService;
-import dev.coauth.module.reconfirm.utils.ResponseFormatter;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
